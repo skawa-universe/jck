@@ -1,0 +1,116 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<title>jck</title>
+<meta name="description" content="jck - json check"/>
+<meta property="og:url" content="."/>
+<style>
+	html {
+        overflow: auto;
+        margin: 0; padding: 8px; box-sizing: border-box; height: 100vh;
+    }
+	body {
+        display: flex; align-items: center; justify-content: center; 
+        text-align: center; font-family: 'San Francisco', 'Helvetica Neue', Tahoma;
+        min-height: 100vh; flex-direction: column;
+    }
+	div.title {
+		display: block;
+		padding: 16px 32px;
+		text-align: center;
+		width: 50vw;
+		background-color: #eee;
+		border-radius: 3px;
+		box-shadow: 0 3px 3px rgba(0,0,0,0.5);
+		color: black;
+		text-decoration: none;
+		font-size: 18px;
+		margin: 8px auto;
+	}
+	.dropShade {
+		display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+		align-items: center;
+		justify-content: center;
+		background: radial-gradient(rgba(0,160,255,0.85), rgba(255,255,255,0));
+		color: white;
+		text-shadow: 0px 1px 5px black, 0px 1px 5px black, 0px 2px 3px black;
+		font-size: 28px;
+		box-shadow: inset 0 0 5vmax rgba(0,160,255,1);
+		z-index: 100;
+		pointer-events: none;
+	}
+	.dropShade::before {
+	    content: 'You can drop the file here';
+	}
+	.dragOver .dropShade {
+		display: flex;
+	}
+    .hidden {
+        display: none;
+    }
+    .error {
+        margin: 16px;
+        border: 4px solid #d44;
+        border-radius: 7px;
+        padding: 4px 16px;
+        width: 720px;
+        background-color: rgba(192, 0, 0, 0.1);
+        color: black;
+    }
+    .error.correct {
+        border-color: #484;
+        background-color: rgba(0, 128, 0, 0.1);
+    }
+    div.outer pre {
+        display: inline-block;
+        text-align: left;
+    }
+    .before {
+        color: green;
+    }
+    @keyframes blink-animation {
+        0% { opacity: 0.75; }
+        50% { opacity: 0; }
+        100% { opacity: 0.75; }
+    }
+    .marker {
+        position: relative; opacity: 0.75;
+        animation: blink-animation 0.5s infinite;
+        pointer-events: none;
+    }
+    .marker:hover {
+        opacity: 0;
+    }
+    .marker::after {
+        content: '';
+        position: absolute;
+        bottom: -25px;
+        left: -25px;
+        height: 0;
+        width: 0;
+        border-right: 25px solid transparent;
+        border-bottom: 25px solid white;
+        border-left: 25px solid transparent;
+    }
+    .marker::before {
+        content: '';
+        position: absolute;
+        bottom: -27px;
+        left: -29px;
+        height: 0;
+        width: 0;
+        border-right: 29px solid transparent;
+        border-bottom: 29px solid black;
+        border-left: 29px solid transparent;
+    }
+</style>
+</head>
+<body>
+<div class="title">Drop a JSON dump file here, or <input type="file"/></div>
+<div class="error hidden"></div>
+<div class="dropShade"></div>
+<script type="application/javascript" src="js/jck.js"></script>
+</body>
+</html>
