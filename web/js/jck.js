@@ -270,6 +270,7 @@ function quoteCharacter(c) {
 function commit(f) {
     loadBlob(f).then(source => {
         var pos = null;
+        var spaces = /\s+/g;
         console.log("File size in characters: "+source.length);
         var numRecords = 0;
         var err = document.querySelector(".error.hidden");
@@ -277,6 +278,10 @@ function commit(f) {
         err.classList.remove("hidden");
         try {
             while (pos === null || pos < source.length) {
+                spaces.lastIndex = pos;
+                var m = spaces.exec(source);
+                if (m.index === pos) pos += m[0].length;
+                if (pos >= source.length) break;
                 pos = jsonPrefixEnd(source, pos);
                 ++numRecords;
             }
@@ -315,7 +320,7 @@ function commit(f) {
                 if (end > source.length) end = source.length;
                 var snippet = source.substring(start, end);
                 var before = charDump(snippet.substring(0, e.position - start), 40, 0);
-                var after = charDump(snippet.substring(e.position - start), 40, before[before.length - 1].length);
+                var after = charDump(snippet.substring(e.position - start), 40, (before[before.length - 1] || "").length);
                 pre.appendChild(makeSpan(before.map(e => Array.from(e).map(quoteCharacter).join("")).join("\n"), "before"));
                 pre.appendChild(makeSpan("", "marker"))
                 pre.appendChild(makeSpan(after.map(e => Array.from(e).map(quoteCharacter).join("")).join("\n"), "after"));
