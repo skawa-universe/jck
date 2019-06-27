@@ -272,14 +272,15 @@ function commit(f) {
         var pos = null;
         console.log("File size in characters: "+source.length);
         var numRecords = 0;
+        var err = document.querySelector(".error.hidden");
+        err.parentNode.appendChild(err.cloneNode(true));
+        err.classList.remove("hidden");
         try {
-            var err = document.querySelector(".error");
             while (pos === null || pos < source.length) {
                 pos = jsonPrefixEnd(source, pos);
                 ++numRecords;
             }
             console.log("Number of records: "+numRecords);
-            err.classList.remove("hidden");
             var name = f.name;
             if (name) {
                 err.textContent = name + " is correct";
@@ -291,7 +292,6 @@ function commit(f) {
             if (e instanceof InvalidJson) {
                 console.log("Number of records before the error: "+numRecords);
                 err.classList.remove("correct");
-                err.classList.remove("hidden");
                 var row = 0;
                 var col = 0;
                 for (var i = 0; i < e.position; ++i) {
@@ -333,4 +333,4 @@ function commit(f) {
 }
 
 dropHandler(document.body, commit);
-document.querySelector("input[type=file]").addEventListener("change", e => commit(e.target.files[0]));
+document.querySelector("input[type=file]").addEventListener("change", e => Array.from(e.target.files).forEach(commit));
