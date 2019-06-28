@@ -314,9 +314,9 @@ function commit(f) {
                 }
                 err.textContent = prefix+" at position "+e.position+" row "+(row+1)+" column "+(col+1);
                 var pre = document.createElement("pre");
-                var start = e.position - 256;
+                var start = e.position - 240;
                 if (start < 0) start = 0;
-                var end = start + 512;
+                var end = start + 480;
                 if (end > source.length) end = source.length;
                 var snippet = source.substring(start, end);
                 var before = charDump(snippet.substring(0, e.position - start), 40, 0);
