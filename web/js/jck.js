@@ -257,8 +257,24 @@ function charDump(s, maxWidth, column) {
 
 function makeSpan(s, cls) {
     var span = document.createElement("span");
+    if (cls) span.className = cls;
     span.textContent = s;
+    return span;
+}
+
+function charSpan(s, cls, arr) {
+    var span = document.createElement("span");
     span.className = cls;
+    for (var c of Array.from(s)) {
+        if (c >= ' ') {
+            var n = makeSpan(c, null);
+            arr.push(n);
+            span.appendChild(n);
+        } else {
+            span.appendChild(document.createTextNode(c));
+        }
+    }
+    span.normalize();
     return span;
 }
 
@@ -299,6 +315,7 @@ function commit(f) {
                 err.classList.remove("correct");
                 var row = 0;
                 var col = 0;
+                var charSpans = [];
                 for (var i = 0; i < e.position; ++i) {
                     if (source.charAt(i) === "\n") {
                         ++row;
@@ -314,20 +331,28 @@ function commit(f) {
                 }
                 err.textContent = prefix+" at position "+e.position+" row "+(row+1)+" column "+(col+1);
                 var pre = document.createElement("pre");
-                var start = e.position - 240;
+                var start = e.position - 260;
                 if (start < 0) start = 0;
-                var end = start + 480;
+                var end = start + 520;
                 if (end > source.length) end = source.length;
                 var snippet = source.substring(start, end);
                 var before = charDump(snippet.substring(0, e.position - start), 40, 0);
                 var after = charDump(snippet.substring(e.position - start), 40, (before[before.length - 1] || "").length);
-                pre.appendChild(makeSpan(before.map(e => Array.from(e).map(quoteCharacter).join("")).join("\n"), "before"));
+                pre.appendChild(charSpan(before.map(e => Array.from(e).map(quoteCharacter).join("")).join("\n"), "before", charSpans));
                 pre.appendChild(makeSpan("", "marker"))
-                pre.appendChild(makeSpan(after.map(e => Array.from(e).map(quoteCharacter).join("")).join("\n"), "after"));
+                pre.appendChild(charSpan(after.map(e => Array.from(e).map(quoteCharacter).join("")).join("\n"), "after", charSpans));
                 var outer = document.createElement("div");
                 outer.classList.add("outer");
                 outer.appendChild(pre);
                 err.appendChild(outer);
+                var maxWidth = Math.max(...charSpans.map(e => e.offsetWidth));
+                if (maxWidth > 8) {
+                    var maxWidthPx = maxWidth+"px";
+                    charSpans.forEach(e => {
+                        e.style.fontStretch = maxWidth * 100 / e.offsetWidth + "%";
+                        e.style.width = maxWidthPx;
+                    });
+                }
             } else {
                 throw e;
             }
