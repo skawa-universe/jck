@@ -283,84 +283,98 @@ function quoteCharacter(c) {
     return c;
 }
 
-function commit(f) {
-    loadBlob(f).then(source => {
-        var pos = null;
-        var spaces = /\s+/g;
-        console.log("File size in characters: "+source.length);
-        var numRecords = 0;
-        var err = document.querySelector(".error.hidden");
-        err.parentNode.appendChild(err.cloneNode(true));
-        err.classList.remove("hidden");
-        try {
-            while (pos === null || pos < source.length) {
-                spaces.lastIndex = pos;
-                var m = spaces.exec(source);
-                if (m.index === pos) pos += m[0].length;
-                if (pos >= source.length) break;
-                pos = jsonPrefixEnd(source, pos);
-                ++numRecords;
-            }
-            console.log("Number of records: "+numRecords);
-            var name = f.name;
-            if (name) {
-                err.textContent = name + " is correct";
-            } else {
-                err.textContent = "Correct";
-            }
-            err.classList.add("correct");
-        } catch (e) {
-            if (e instanceof InvalidJson) {
-                console.log("Number of records before the error: "+numRecords);
-                err.classList.remove("correct");
-                var row = 0;
-                var col = 0;
-                var charSpans = [];
-                for (var i = 0; i < e.position; ++i) {
-                    if (source.charAt(i) === "\n") {
-                        ++row;
-                        col = 0;
-                    } else {
-                        ++col;
-                    }
-                }
-                var name = f.name;
-                var prefix = "Error";
-                if (name) {
-                    prefix += " in "+name;
-                }
-                err.textContent = prefix+" at position "+e.position+" row "+(row+1)+" column "+(col+1);
-                var pre = document.createElement("pre");
-                var start = e.position - 260;
-                if (start < 0) start = 0;
-                var end = start + 520;
-                if (end > source.length) end = source.length;
-                var snippet = source.substring(start, end);
-                var before = charDump(snippet.substring(0, e.position - start), 40, 0);
-                var after = charDump(snippet.substring(e.position - start), 40, (before[before.length - 1] || "").length);
-                pre.appendChild(charSpan(before.map(e => Array.from(e).map(quoteCharacter).join("")).join("\n"), "before", charSpans));
-                pre.appendChild(makeSpan("", "marker"))
-                pre.appendChild(charSpan(after.map(e => Array.from(e).map(quoteCharacter).join("")).join("\n"), "after", charSpans));
-                var outer = document.createElement("div");
-                outer.classList.add("outer");
-                outer.appendChild(pre);
-                err.appendChild(outer);
-                var maxWidth = Math.max(...charSpans.map(e => e.offsetWidth));
-                if (maxWidth > 8) {
-                    var maxWidthPx = maxWidth+"px";
-                    charSpans.forEach(e => {
-                        e.style.fontStretch = maxWidth * 100 / e.offsetWidth + "%";
-                        e.style.width = maxWidthPx;
-                    });
-                }
-            } else {
-                throw e;
-            }
+function handleSource(source, name) {
+    var pos = null;
+    var spaces = /\s+/g;
+    console.log("File size in characters: "+source.length);
+    var numRecords = 0;
+    var err = document.querySelector(".error.hidden");
+    err.parentNode.appendChild(err.cloneNode(true));
+    err.classList.remove("hidden");
+    try {
+        while (pos === null || pos < source.length) {
+            spaces.lastIndex = pos;
+            var m = spaces.exec(source);
+            if (m.index === pos) pos += m[0].length;
+            if (pos >= source.length) break;
+            pos = jsonPrefixEnd(source, pos);
+            ++numRecords;
         }
-    }).catch(error => {
+        console.log("Number of records: "+numRecords);
+        if (name) {
+            err.textContent = name + " is correct";
+        } else {
+            err.textContent = "Correct";
+        }
+        err.classList.add("correct");
+    } catch (e) {
+        if (e instanceof InvalidJson) {
+            console.log("Number of records before the error: "+numRecords);
+            err.classList.remove("correct");
+            var row = 0;
+            var col = 0;
+            var charSpans = [];
+            for (var i = 0; i < e.position; ++i) {
+                if (source.charAt(i) === "\n") {
+                    ++row;
+                    col = 0;
+                } else {
+                    ++col;
+                }
+            }
+            var prefix = "Error";
+            if (name) {
+                prefix += " in "+name;
+            }
+            err.textContent = prefix+" at position "+e.position+" row "+(row+1)+" column "+(col+1);
+            var pre = document.createElement("pre");
+            var start = e.position - 260;
+            if (start < 0) start = 0;
+            var end = start + 520;
+            if (end > source.length) end = source.length;
+            var snippet = source.substring(start, end);
+            var before = charDump(snippet.substring(0, e.position - start), 40, 0);
+            var after = charDump(snippet.substring(e.position - start), 40, (before[before.length - 1] || "").length);
+            pre.appendChild(charSpan(before.map(e => Array.from(e).map(quoteCharacter).join("")).join("\n"), "before", charSpans));
+            pre.appendChild(makeSpan("", "marker"))
+            pre.appendChild(charSpan(after.map(e => Array.from(e).map(quoteCharacter).join("")).join("\n"), "after", charSpans));
+            var outer = document.createElement("div");
+            outer.classList.add("outer");
+            outer.appendChild(pre);
+            err.appendChild(outer);
+            var maxWidth = Math.max(...charSpans.map(e => e.offsetWidth));
+            if (maxWidth > 8) {
+                var maxWidthPx = maxWidth+"px";
+                charSpans.forEach(e => {
+                    e.style.fontStretch = maxWidth * 100 / e.offsetWidth + "%";
+                    e.style.width = maxWidthPx;
+                });
+            }
+        } else {
+            throw e;
+        }
+    }
+}
+
+function commit(f) {
+    loadBlob(f).then(source => handleSource(source, f.name)).catch(error => {
         console.error(error);
     });
 }
 
 dropHandler(document.body, commit);
+document.addEventListener("paste", event => {
+    var items = Array.from(event.clipboardData["items"]);
+	for(var item of items) {
+		if(item.kind === "file") {
+			if(item.name)
+				console.log("Found a file: ", item.name);
+			commit(item.getAsFile());
+		} if (item.kind === "string" && item.type === "text/plain") {
+            item.getAsString(str => handleSource(str, "<pasted text>"));
+		} else {
+			console.log("Don't know what to do with this:", item.kind, item.type);
+		}
+	}
+});
 document.querySelector("input[type=file]").addEventListener("change", e => Array.from(e.target.files).forEach(commit));
