@@ -10,7 +10,7 @@ const dropHandler = (element, callback) => {
     function handleDataTransferFiles(dataTransfer, event) {
         var files = Array.prototype.slice.call(dataTransfer.files);
         var foundFiles = false;
-        files.forEach(function(f) {
+        files.forEach(function (f) {
             foundFiles = true;
             callback(f, event);
         });
@@ -18,25 +18,25 @@ const dropHandler = (element, callback) => {
     }
 
     function dragOver(e) {
-		e.stopPropagation();
-		e.preventDefault();
-		e.dataTransfer.dropEffect = "copy";
+        e.stopPropagation();
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "copy";
         e.currentTarget.classList.add("dragOver");
     }
 
     function drop(e) {
-		e.stopPropagation();
-		e.preventDefault();
-		handleDataTransferFiles(e.dataTransfer, e);
-		e.currentTarget.classList.remove("dragOver");
+        e.stopPropagation();
+        e.preventDefault();
+        handleDataTransferFiles(e.dataTransfer, e);
+        e.currentTarget.classList.remove("dragOver");
     }
 
     function dragEnter(e) {
         e.currentTarget.classList.add("dragOver");
     }
-    
+
     function dragLeave(e) {
-		e.currentTarget.classList.remove("dragOver");
+        e.currentTarget.classList.remove("dragOver");
     }
 
     var bound = false;
@@ -56,7 +56,7 @@ const dropHandler = (element, callback) => {
         element.removeEventListener("dragleave", dragLeave, false);
         bound = false;
     };
-    
+
     api.bind();
 
     return api;
@@ -75,48 +75,48 @@ const validEscapes = (function () {
 const hexChar = /[0-9a-fA-F]/;
 
 function jsonPrefixEnd(input, startPos) {
-	var pos = startPos || 0;
-	if(typeof pos !== "number")
-		pos = 0;
-	
-	function look(c) {
-		return input.substring(pos, pos+c.length) === c;
-	}
-	
-	function consume(c) {
-		if(!look(c))
-			throw new InvalidJson(pos);
-		pos += c.length;
-	}
-	
-	function consumeSpaces() {
-		var re = /[^\s]/g;
-		re.lastIndex = pos;
-		var m = re.exec(input);
-		if(m)
-			pos = m.index;
-		else
-			pos = input.length;
-	}
-	
-	function current() {
-		return input.charAt(pos);
-	}
-	
-	function advance() {
-		++pos;
-	}
-	
-	function next() {
-		advance();
-		return current();
-	}
-	
-	const skip = {
-		"s": function() {
-			consume('"');
-			var esc = false;
-			while(input.charAt(pos) !== '"' || esc) {
+    var pos = startPos || 0;
+    if (typeof pos !== "number")
+        pos = 0;
+
+    function look(c) {
+        return input.substring(pos, pos + c.length) === c;
+    }
+
+    function consume(c) {
+        if (!look(c))
+            throw new InvalidJson(pos);
+        pos += c.length;
+    }
+
+    function consumeSpaces() {
+        var re = /[^\s]/g;
+        re.lastIndex = pos;
+        var m = re.exec(input);
+        if (m)
+            pos = m.index;
+        else
+            pos = input.length;
+    }
+
+    function current() {
+        return input.charAt(pos);
+    }
+
+    function advance() {
+        ++pos;
+    }
+
+    function next() {
+        advance();
+        return current();
+    }
+
+    const skip = {
+        "s": function () {
+            consume('"');
+            var esc = false;
+            while (input.charAt(pos) !== '"' || esc) {
                 if (esc) {
                     if (current() === "u") {
                         advance();
@@ -134,109 +134,109 @@ function jsonPrefixEnd(input, startPos) {
                     }
                     esc = false;
                 } else {
-                    if(current() === "\\")
+                    if (current() === "\\")
                         esc = true;
                     else
                         esc = false;
                     advance();
                 }
-			}
-			consume('"');
-		},
-		"n": function() {
-			var c = current();
-			if(c === "-")
-				c = next();
-			while(c >= "0" && c <= "9")
-				c = next();
-			if(c === ".") {
-				c = next();
-				while(c >= "0" && c <= "9")
-					c = next();
-			}
-			if(c === "e" || c === "E") {
-				c = next();
-				if(c === "+" || c === "-")
-					c = next();
-				while(c >= "0" && c <= "9")
-					c = next();
-			}
-		},
-		"k": function() {
-			[true, false, null].map(String).find(function(e) {
-				if(look(e)) {
-					consume(e);
-					return true;
-				}
-				return false;
-			});
-		},
-		"o": function() {
-			consume("{");
-			consumeSpaces();
-			while(!look("}")) {
-				skip["s"]();
-				consumeSpaces();
-				consume(":");
-				skip["_"]();
-				consumeSpaces();
-				if(look("}"))
-					break;
-				consume(",");
-				consumeSpaces();
-			}
-			advance();
-		},
-		"a": function() {
-			consume("[");
-			consumeSpaces();
-			while(!look("]")) {
-				skip["_"]();
-				consumeSpaces();
-				if(look("]"))
-					break;
-				consume(",");
-				consumeSpaces();
-			}
-			advance();
-		},
-		"_": function() {
-			consumeSpaces();
-			var c = current();
-			var types = {
-				"tfn": "k",
-				"{": "o",
-				"[": "a",
-				"-0123456789": "n",
-				"\"": "s"
-			};
-			for(var key in types) {
-				if(key.length > 1) {
-					for(var k of key)
-						types[k] = types[key];
-				}
-			}
-			var t = types[c];
-			if(t && skip[t]) {
-				skip[t].call(skip);
-			} else {
-				throw new InvalidJson(pos);
-			}
-		}
-	}
-	
-	skip["_"]();
-	
-	return pos;
+            }
+            consume('"');
+        },
+        "n": function () {
+            var c = current();
+            if (c === "-")
+                c = next();
+            while (c >= "0" && c <= "9")
+                c = next();
+            if (c === ".") {
+                c = next();
+                while (c >= "0" && c <= "9")
+                    c = next();
+            }
+            if (c === "e" || c === "E") {
+                c = next();
+                if (c === "+" || c === "-")
+                    c = next();
+                while (c >= "0" && c <= "9")
+                    c = next();
+            }
+        },
+        "k": function () {
+            [true, false, null].map(String).find(function (e) {
+                if (look(e)) {
+                    consume(e);
+                    return true;
+                }
+                return false;
+            });
+        },
+        "o": function () {
+            consume("{");
+            consumeSpaces();
+            while (!look("}")) {
+                skip["s"]();
+                consumeSpaces();
+                consume(":");
+                skip["_"]();
+                consumeSpaces();
+                if (look("}"))
+                    break;
+                consume(",");
+                consumeSpaces();
+            }
+            advance();
+        },
+        "a": function () {
+            consume("[");
+            consumeSpaces();
+            while (!look("]")) {
+                skip["_"]();
+                consumeSpaces();
+                if (look("]"))
+                    break;
+                consume(",");
+                consumeSpaces();
+            }
+            advance();
+        },
+        "_": function () {
+            consumeSpaces();
+            var c = current();
+            var types = {
+                "tfn": "k",
+                "{": "o",
+                "[": "a",
+                "-0123456789": "n",
+                "\"": "s"
+            };
+            for (var key in types) {
+                if (key.length > 1) {
+                    for (var k of key)
+                        types[k] = types[key];
+                }
+            }
+            var t = types[c];
+            if (t && skip[t]) {
+                skip[t].call(skip);
+            } else {
+                throw new InvalidJson(pos);
+            }
+        }
+    }
+
+    skip["_"]();
+
+    return pos;
 };
 
 function loadBlob(f) {
     return new Promise((resolve, reject) => {
         var reader = new FileReader();
-        reader.onload = function() {
+        reader.onload = function () {
             resolve(reader.result);
         };
-        reader.onerror = function() {
+        reader.onerror = function () {
             reject("error loading file");
         };
         reader.readAsText(f, "UTF-8");
@@ -287,7 +287,7 @@ function quoteCharacter(c) {
 function handleSource(source, name) {
     var pos = null;
     var spaces = /\s+/g;
-    console.log("File size in characters: "+source.length);
+    console.log("File size in characters: " + source.length);
     var numRecords = 0;
     var err = document.querySelector(".error.hidden");
     err.parentNode.appendChild(err.cloneNode(true));
@@ -301,7 +301,7 @@ function handleSource(source, name) {
             pos = jsonPrefixEnd(source, pos);
             ++numRecords;
         }
-        console.log("Number of records: "+numRecords);
+        console.log("Number of records: " + numRecords);
         if (name) {
             err.textContent = name + " is correct";
         } else {
@@ -310,7 +310,7 @@ function handleSource(source, name) {
         err.classList.add("correct");
     } catch (e) {
         if (e instanceof InvalidJson) {
-            console.log("Number of records before the error: "+numRecords);
+            console.log("Number of records before the error: " + numRecords);
             err.classList.remove("correct");
             var row = 0;
             var col = 0;
@@ -325,9 +325,9 @@ function handleSource(source, name) {
             }
             var prefix = "Error";
             if (name) {
-                prefix += " in "+name;
+                prefix += " in " + name;
             }
-            err.textContent = prefix+" at position "+e.position+" row "+(row+1)+" column "+(col+1);
+            err.textContent = prefix + " at position " + e.position + " row " + (row + 1) + " column " + (col + 1);
             var pre = document.createElement("pre");
             var start = e.position - 260;
             if (start < 0) start = 0;
@@ -345,7 +345,7 @@ function handleSource(source, name) {
             err.appendChild(outer);
             var maxWidth = Math.max(...charSpans.map(e => e.offsetWidth));
             if (maxWidth > 8) {
-                var maxWidthPx = maxWidth+"px";
+                var maxWidthPx = maxWidth + "px";
                 charSpans.forEach(e => {
                     e.style.fontStretch = maxWidth * 100 / e.offsetWidth + "%";
                     e.style.width = maxWidthPx;
@@ -366,16 +366,16 @@ function commit(f) {
 dropHandler(document.body, commit);
 document.addEventListener("paste", event => {
     var items = Array.from(event.clipboardData["items"]);
-	for(var item of items) {
-		if(item.kind === "file") {
-			if(item.name)
-				console.log("Found a file: ", item.name);
-			commit(item.getAsFile());
-		} if (item.kind === "string" && item.type === "text/plain") {
+    for (var item of items) {
+        if (item.kind === "file") {
+            if (item.name)
+                console.log("Found a file: ", item.name);
+            commit(item.getAsFile());
+        } if (item.kind === "string" && item.type === "text/plain") {
             item.getAsString(str => handleSource(str, "<pasted text>"));
-		} else {
-			console.log("Don't know what to do with this:", item.kind, item.type);
-		}
-	}
+        } else {
+            console.log("Don't know what to do with this:", item.kind, item.type);
+        }
+    }
 });
 document.querySelector("input[type=file]").addEventListener("change", e => Array.from(e.target.files).forEach(commit));
