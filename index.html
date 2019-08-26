@@ -1,9 +1,9 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <title>jck</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <meta name="description" content="jck - json check"/>
 <meta property="og:url" content="https://skawa-universe.github.io/jck/"/>
 <meta property="og:image" content="https://skawa-universe.github.io/jck/img/preview.png"/>
@@ -88,29 +88,30 @@
     .marker::after {
         content: '';
         position: absolute;
-        bottom: -25px;
+        bottom: -26px;
         left: -25px;
         height: 0;
         width: 0;
         border-right: 25px solid transparent;
         border-bottom: 25px solid white;
         border-left: 25px solid transparent;
+        transform: translate(0px, -0.125px);
     }
     .marker::before {
         content: '';
         position: absolute;
-        bottom: -27px;
-        left: -29px;
+        bottom: -28px;
+        left: -30px;
         height: 0;
         width: 0;
-        border-right: 29px solid transparent;
-        border-bottom: 29px solid black;
-        border-left: 29px solid transparent;
+        border-right: 30px solid transparent;
+        border-bottom: 30px solid black;
+        border-left: 30px solid transparent;
     }
 </style>
 </head>
 <body>
-<div class="title">Drop a JSON dump file here, or <input type="file" multiple="multiple"/></div>
+<div class="title"><label>Drop a JSON dump file here, or <input type="file" multiple="multiple"/></label></div>
 <div class="error hidden"></div>
 <div class="dropShade"></div>
 <script type="application/javascript" src="js/jck.min.js"></script>
