@@ -1,7 +1,7 @@
 // ==ClosureCompiler==
 // @output_file_name default.js
 // @compilation_level ADVANCED_OPTIMIZATIONS
-// @language_out ECMASCRIPT_2015
+// @language_out ECMASCRIPT_2020
 // ==/ClosureCompiler==
 
 const dropHandler = (element, callback) => {
@@ -81,6 +81,10 @@ function jsonPrefixEnd(input, startPos) {
 
     function look(c) {
         return input.substring(pos, pos + c.length) === c;
+    }
+
+    function expectNot(c) {
+        if (look(c)) throw new InvalidJson(pos);
     }
 
     function consume(c) {
@@ -184,6 +188,7 @@ function jsonPrefixEnd(input, startPos) {
                     break;
                 consume(",");
                 consumeSpaces();
+                expectNot("}");
             }
             advance();
         },
@@ -197,6 +202,7 @@ function jsonPrefixEnd(input, startPos) {
                     break;
                 consume(",");
                 consumeSpaces();
+                expectNot("]");
             }
             advance();
         },
